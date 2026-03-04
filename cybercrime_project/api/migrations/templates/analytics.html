@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>Complaint Analytics</h3>
+
+<p><strong>Total Complaints:</strong> {{ total_complaints }}</p>
+
+<table class="table table-striped">
+    <tr>
+        <th>Status</th>
+        <th>Total</th>
+    </tr>
+    {% for item in data %}
+    <tr>
+        <td>{{ item.status }}</td>
+        <td>{{ item.total }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}
