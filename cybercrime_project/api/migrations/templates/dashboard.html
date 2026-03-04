@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>My Complaints</h3>
+<a href="{% url 'add_complaint' %}" class="btn btn-success">New Complaint</a>
+<table class="table mt-3">
+    <tr>
+        <th>ID</th>
+        <th>Crime Type</th>
+        <th>Status</th>
+    </tr>
+    {% for complaint in complaints %}
+    <tr>
+        <td>{{ complaint.complaint_id }}</td>
+        <td>{{ complaint.crime_type }}</td>
+        <td>
+            <span class="badge bg-warning">{{ complaint.status }}</span>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
