@@ -1,3 +1,4 @@
+from django.db import models
 class Complaint(models.Model):
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
