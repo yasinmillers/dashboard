@@ -17,5 +17,23 @@
     </tr>
     {% endfor %}
 </table>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<canvas id="myChart"></canvas>
+
+<script>
+const data = {
+    labels: [{% for item in data %}"{{ item.status }}",{% endfor %}],
+    datasets: [{
+        label: 'Complaints by Status',
+        data: [{% for item in data %}{{ item.total }},{% endfor %}],
+    }]
+};
+
+new Chart(document.getElementById('myChart'), {
+    type: 'bar',
+    data: data
+});
+</script>
 
 {% endblock %}
