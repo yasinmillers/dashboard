@@ -1,33 +1,58 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
-from .forms import ComplaintForm
-from django.contrib.auth.decorators import login_required
-from django.contrib.admin.views.decorators import staff_member_required
+from rest_framework import generics
+from django.contrib.auth import get_user_model
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
-@login_required
-def dashboard(request):
-    complaints = Complaint.objects.filter(user=request.user)
-    return render(request, "dashboard.html", {"complaints": complaints})
-
-
-
-@staff_member_required
-def admin_dashboard(request):
-    complaints = Complaint.objects.all()
-    return render(request, "admin_dashboard.html", {"complaints": complaints})
-
-
-from django.db.models import Count
-from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import render
 from .models import Complaint
+from .serializers import UserSerializer, ComplaintSerializer
 
-@staff_member_required
-def analytics(request):
-    data = Complaint.objects.values('status').annotate(total=Count('id'))
-    total_complaints = Complaint.objects.count()
+User = get_user_model()
 
-    return render(request, "analytics.html", {
-        "data": data,
-        "total_complaints": total_complaints
-    })
+
+# USER REGISTRATION
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
+
+
+# USER LOGIN
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        user = User.objects.filter(username=username).first()
+
+        if user and user.check_password(password):
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token)
+            })
+
+        return Response({"error": "Invalid credentials"})
+
+
+# CREATE COMPLAINT
+class ComplaintCreateView(generics.CreateAPIView):
+    queryset = Complaint.objects.all()
+    serializer_class = ComplaintSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+# LIST COMPLAINTS
+class ComplaintListView(generics.ListAPIView):
+    serializer_class = ComplaintSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Complaint.objects.filter(user=self.request.user)
