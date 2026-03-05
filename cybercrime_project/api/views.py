@@ -56,3 +56,17 @@ class ComplaintListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Complaint.objects.filter(user=self.request.user)
+    
+    
+def analytics(request):
+    total = Complaint.objects.count()
+    pending = Complaint.objects.filter(status="Pending").count()
+    resolved = Complaint.objects.filter(status="Resolved").count()
+
+    data = {
+        "total_complaints": total,
+        "pending_cases": pending,
+        "resolved_cases": resolved
+    }
+
+    return JsonResponse(data)
