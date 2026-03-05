@@ -1,26 +1,26 @@
 from django.db import models
-from django.conf import settings
-import uuid
+from django.contrib.auth.models import AbstractUser
 
-class Complaint(models.Model):
-    STATUS_CHOICES = [
-        ('Pending', 'Pending'),
-        ('Investigating', 'Investigating'),
-        ('Resolved', 'Resolved'),
-        ('Rejected', 'Rejected'),
-    ]
 
-    complaint_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    crime_type = models.CharField(max_length=100)
-    description = models.TextField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
+class User(AbstractUser):
+    ROLE_CHOICES = (
+        ('citizen', 'Citizen'),
+        ('officer', 'Officer'),
+        ('admin', 'Admin'),
     )
 
-    def __str__(self):
-        return f"{self.crime_type} - {self.status}"
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='citizen')
+
+
+class Complaint(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('investigating', 'Investigating'),
+        ('resolved', 'Resolved'),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
